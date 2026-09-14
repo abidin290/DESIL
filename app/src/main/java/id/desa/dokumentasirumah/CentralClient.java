@@ -15,6 +15,25 @@ final class CentralClient {
     JSONObject callWithRetry(JSONObject body,RetryPolicy.Notice notice)throws Exception{
         return RetryPolicy.run(()->call(body),Thread::sleep,notice);
     }
+    JSONObject photoWithRetry(JSONObject report,int slot,File file,RetryPolicy.Notice notice)throws Exception{
+        if(endpoint.equals(DEFAULT_ENDPOINT))return RetryPolicy.run(()->callBinary(report,slot,file),Thread::sleep,notice);
+        return callWithRetry(photoBody(report,slot,file),notice);
+    }
+    private JSONObject callBinary(JSONObject report,int slot,File file)throws Exception{
+        if(file.length()>4*1024*1024)throw new IOException("Foto melebihi 4 MB. Hapus draf dan ambil ulang foto.");
+        JSONObject meta=new JSONObject(report.toString()).put("action","photo").put("slot",slot);
+        String encoded=Base64.getUrlEncoder().withoutPadding().encodeToString(meta.toString().getBytes(StandardCharsets.UTF_8));
+        HttpURLConnection c=(HttpURLConnection)new URL(endpoint).openConnection();
+        c.setRequestMethod("POST");c.setConnectTimeout(20000);c.setReadTimeout(120000);c.setDoOutput(true);c.setRequestProperty("Content-Type","application/octet-stream");c.setRequestProperty("X-Desil-Code",code);c.setRequestProperty("X-Desil-Meta",encoded);c.setFixedLengthStreamingMode(file.length());
+        try{
+            try(OutputStream out=c.getOutputStream();InputStream in=new FileInputStream(file)){byte[] b=new byte[8192];int n;while((n=in.read(b))!=-1)out.write(b,0,n);}
+            int status=c.getResponseCode();InputStream input=status>=400?c.getErrorStream():c.getInputStream();ByteArrayOutputStream bytes=new ByteArrayOutputStream();
+            if(input!=null)try(InputStream in=input){byte[] b=new byte[2048];int n;while((n=in.read(b))!=-1){bytes.write(b,0,n);if(bytes.size()>65536)throw new IOException("Respons server tidak valid.");}}
+            JSONObject response;try{response=new JSONObject(bytes.toString("UTF-8"));}catch(JSONException e){throw new RetryPolicy.Failure("Server Vercel tidak mengirim respons yang valid.",status==408||status==429||status>=500);}
+            if(status!=200||!response.optBoolean("ok"))throw new RetryPolicy.Failure(response.optString("message","Upload gagal. Draf tetap tersimpan."),response.optBoolean("retryable")||status==408||status==429||status>=500);
+            return response;
+        }catch(SocketTimeoutException|UnknownHostException e){throw new RetryPolicy.Failure("Koneksi terputus atau lambat. Draf tetap tersimpan; lanjutkan upload setelah internet tersedia.",true);}finally{c.disconnect();}
+    }
     JSONObject call(JSONObject body) throws Exception {
         body.put("code",code);
         byte[] data=body.toString().getBytes(StandardCharsets.UTF_8);

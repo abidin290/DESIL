@@ -29,6 +29,7 @@ public class MainActivity extends Activity {
     private static final int LOCATION_PERMISSION=42;
     private static final int DOC_CAMERA=43;
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
+    private final ExecutorService thumbnailWorker=Executors.newFixedThreadPool(2);
     private final ImageView[] thumbs=new ImageView[FormRules.LABELS.length];
     private final TextView[] captions=new TextView[FormRules.LABELS.length];
     private final LinearLayout[] rows=new LinearLayout[FormRules.LABELS.length];
@@ -157,8 +158,8 @@ public class MainActivity extends Activity {
             captions[i].setTextColor(have[i]?TEAL:MUTED);
             String thumbnailKey=have[i]?photo(i).length()+":"+photo(i).lastModified():"empty";
             if(!thumbnailKey.equals(thumbnailKeys[i])){
-                if(have[i]){BitmapFactory.Options opts=new BitmapFactory.Options();opts.inSampleSize=4;thumbs[i].setImageBitmap(BitmapFactory.decodeFile(photo(i).getPath(),opts));}else{thumbs[i].setImageBitmap(cameraIcon());}
                 thumbnailKeys[i]=thumbnailKey;
+                if(have[i]){final int index=i;final String expected=thumbnailKey;thumbnailWorker.execute(()->{BitmapFactory.Options opts=new BitmapFactory.Options();opts.inSampleSize=8;Bitmap bitmap=BitmapFactory.decodeFile(photo(index).getPath(),opts);runOnUiThread(()->{if(expected.equals(thumbnailKeys[index])&&bitmap!=null)thumbs[index].setImageBitmap(bitmap);else if(bitmap!=null)bitmap.recycle();});});}else{thumbs[i].setImageBitmap(cameraIcon());}
             }
             ((TextView)rows[i].getChildAt(2)).setText(have[i]?"Lihat":"+");
             ((TextView)rows[i].getChildAt(2)).setTextSize(have[i]?12:23);
@@ -268,7 +269,7 @@ public class MainActivity extends Activity {
             if(result!=RESULT_OK||index<0||index>=FormRules.LABELS.length){capture().delete();return;}
             final LocationStamp stamp=req==CAMERA?currentLocation():null;
             busy=true;refresh();status.setText("Menyimpan foto...");
-            worker.execute(()->{try{normalizePhoto(capture(),photo(index));SharedPreferences.Editor editor=draft.edit();if(stamp!=null)stamp.save(editor,index);else LocationStamp.clear(editor,index);editor.commit();new UploadCompressor(getFilesDir()).clear();runOnUiThread(()->{busy=false;refresh();status.setText(index>=FormRules.REQUIRED_COUNT?"Lampiran opsional tersimpan.":stamp==null?"Foto tersimpan. Koordinat belum tersedia di HP.":"Foto tersimpan dengan koordinat.");});}catch(Exception e){runOnUiThread(()->{busy=false;refresh();error("Foto gagal disimpan. Silakan ambil ulang.");});}finally{capture().delete();}});
+            worker.execute(()->{try{normalizePhoto(capture(),photo(index));SharedPreferences.Editor editor=draft.edit();if(stamp!=null)stamp.save(editor,index);else LocationStamp.clear(editor,index);editor.commit();String kk=draft.getString("name","").trim();if(!kk.isEmpty())prepareUpload(new UploadCompressor(getFilesDir()),index,kk);runOnUiThread(()->{busy=false;refresh();status.setText(index>=FormRules.REQUIRED_COUNT?"Lampiran opsional tersimpan dan dioptimalkan.":stamp==null?"Foto tersimpan. Koordinat belum tersedia di HP.":"Foto tersimpan dan siap diunggah.");});}catch(Exception e){runOnUiThread(()->{busy=false;refresh();error("Foto gagal disimpan. Silakan ambil ulang.");});}finally{capture().delete();}});
         }
     }
     private void normalizePhoto(File input,File output)throws Exception{
@@ -288,7 +289,7 @@ public class MainActivity extends Activity {
         busy=true;refresh();getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);progress.setMax(15);progress.setProgress(0);stageProgress=0;
         worker.execute(()->{
             try{
-                String endpoint=CentralClient.DEFAULT_ENDPOINT;
+                String endpoint=draft.contains("reportId")?draft.getString("endpoint",CentralClient.DEFAULT_ENDPOINT):CentralClient.DEFAULT_ENDPOINT;
                 if(!CentralClient.validEndpoint(endpoint))throw new IOException("URL server tidak valid.");
                 CentralClient client=new CentralClient(endpoint,access.code());
                 File[] uploadPhotos=new File[FormRules.LABELS.length];
@@ -304,8 +305,7 @@ public class MainActivity extends Activity {
                     for(int i=0;i<FormRules.LABELS.length;i++){
                         if(i>=FormRules.REQUIRED_COUNT && !photo(i).isFile())continue;
                         update(Math.min(i,5),"Menyiapkan "+FormRules.LABELS[i]+"...");
-                        LocationStamp stamp=LocationStamp.fromDraft(draft,i);
-                        uploadPhotos[i]=compressor.prepare(photo(i),stamp,"RUMAH "+folderName.toUpperCase(new Locale("id","ID")),"Desa Tombulang, Kec. Pinogaluman,","Kab. Bolaang Mongondow Utara, Sulawesi Utara");
+                        uploadPhotos[i]=prepareUpload(compressor,i,folderName);
                     }
                 }
                 if(!draft.contains("reportId")){
@@ -326,8 +326,7 @@ public class MainActivity extends Activity {
                 JSONArray ids=new JSONArray();for(int i=0;i<9 && draft.contains("id"+i);i++)ids.put(draft.getString("id"+i,""));
                 JSONObject report=new JSONObject().put("reportId",draft.getString("reportId","")).put("ids",ids).put("name",folderName);
                 update(5,"Menyiapkan folder pusat...");request(client,new JSONObject(report.toString()).put("action","begin"),"Menyiapkan folder");update(6,"Folder pusat siap.");
-                for(int i=0;i<FormRules.REQUIRED_COUNT;i++){update(i+6,"Mengirim foto "+(i+1)+"/5...");request(client,client.photoBody(report,i,uploadPhotos[i]),"Mengirim foto "+(i+1)+"/5");record("Belum selesai",(i+1)+"/5 foto diterima; menunggu verifikasi lengkap.");update(i+7,(i+1)+"/5 foto diterima server");}
-                for(int i=FormRules.REQUIRED_COUNT;i<FormRules.LABELS.length;i++)if(uploadPhotos[i]!=null && uploadPhotos[i].isFile() && draft.contains("id"+(i+1))){update(i+7,"Mengirim "+FormRules.LABELS[i]+"...");request(client,client.photoBody(report,i,uploadPhotos[i]),"Mengirim "+FormRules.LABELS[i]);}
+                uploadParallel(client,report,uploadPhotos);
                 update(14,"Memeriksa kelengkapan laporan...");
                 JSONObject result=request(client,new JSONObject(report.toString()).put("action","complete"),"Memeriksa laporan");
                 if(!result.optBoolean("complete") || !report.getString("reportId").equals(result.optString("reportId")))throw new IOException("Server belum mengonfirmasi laporan lengkap.");
@@ -341,9 +340,21 @@ public class MainActivity extends Activity {
     private JSONObject request(CentralClient client,JSONObject body,String stage)throws Exception{
         return client.callWithRetry(body,(retry,total,millis)->update(stageProgress,stage+" - koneksi/server sibuk. Coba ulang "+retry+"/"+total+" dalam "+(millis/1000)+" detik..."));
     }
+    private File prepareUpload(UploadCompressor compressor,int index,String folderName)throws Exception{
+        LocationStamp stamp=LocationStamp.fromDraft(draft,index);int limit=index<FormRules.REQUIRED_COUNT?UploadCompressor.HOUSE_BYTES:index==5?UploadCompressor.KTP_BYTES:index==6?UploadCompressor.KK_BYTES:UploadCompressor.IDPEL_BYTES;
+        return compressor.prepare(photo(index),stamp,limit,"RUMAH "+folderName.toUpperCase(new Locale("id","ID")),"Desa Tombulang, Kec. Pinogaluman,","Kab. Bolaang Mongondow Utara, Sulawesi Utara");
+    }
+    private void uploadParallel(CentralClient client,JSONObject report,File[] photos)throws Exception{
+        ExecutorService uploads=Executors.newFixedThreadPool(2);CompletionService<Integer> completed=new ExecutorCompletionService<>(uploads);int total=0;
+        try{
+            for(int i=0;i<photos.length;i++)if(photos[i]!=null&&photos[i].isFile()&&draft.contains("id"+(i+1))){final int slot=i;completed.submit(()->{client.photoWithRetry(report,slot,photos[slot],(retry,max,millis)->update(stageProgress,"Mengulang "+FormRules.LABELS[slot]+" "+retry+"/"+max+"..."));return slot;});total++;}
+            int requiredDone=0;
+            for(int n=0;n<total;n++){int slot;try{slot=completed.take().get();}catch(ExecutionException e){Throwable cause=e.getCause();if(cause instanceof Exception)throw (Exception)cause;throw new IOException("Upload foto gagal.",cause);}if(slot<FormRules.REQUIRED_COUNT){requiredDone++;record("Belum selesai",requiredDone+"/5 foto diterima; menunggu verifikasi lengkap.");}update(Math.min(13,7+n),(n+1)+"/"+total+" file diterima server");}
+        }finally{uploads.shutdownNow();}
+    }
     private void update(int value,String message){stageProgress=value;runOnUiThread(()->{progress.setProgress(value);status.setText(message);});}
     private void clearDraft(){new UploadCompressor(getFilesDir()).clear();for(int i=0;i<FormRules.LABELS.length;i++)photo(i).delete();capture().delete();draft.edit().clear().commit();name.setText("");progress.setProgress(0);refresh();}
     private void error(String message){status.setText(message);new AlertDialog.Builder(this).setTitle("Belum berhasil").setMessage(message).setPositiveButton("Mengerti",null).show();}
     @Override public void onBackPressed(){if(busy){Toast.makeText(this,"Tunggu proses selesai. Draf tersimpan bila aplikasi terhenti.",Toast.LENGTH_SHORT).show();}else super.onBackPressed();}
-    @Override protected void onDestroy(){worker.shutdown();super.onDestroy();}
+    @Override protected void onDestroy(){worker.shutdown();thumbnailWorker.shutdownNow();super.onDestroy();}
 }

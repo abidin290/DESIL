@@ -1,7 +1,7 @@
 {
-  "versionCode": 16,
-  "versionName": "2.8.1",
-  "releaseUrl": "https://github.com/abidin290/DESIL/releases/tag/v2.8.1",
-  "apkUrl": "https://github.com/abidin290/DESIL/releases/download/v2.8.1/dokumentasi-rumah-pusat-debug.apk",
-  "notes": "Mempercantik label GPS dengan nama rumah, alamat lengkap, koordinat, akurasi, dan waktu."
+  "versionCode": 17,
+  "versionName": "2.9.0",
+  "releaseUrl": "https://github.com/abidin290/DESIL/releases/tag/v2.9.0",
+  "apkUrl": "https://github.com/abidin290/DESIL/releases/download/v2.9.0/dokumentasi-rumah-pusat-debug.apk",
+  "notes": "Peningkatan performa upload: transfer biner, dua foto paralel, cache token Google, kompresi adaptif, dan thumbnail background."
 }

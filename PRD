@@ -159,3 +159,6 @@ Mau saya buatkan juga skema struktur folder/kodenya untuk Android Studio (Kotlin
 # Tambahan v2.8.1 - Panel GPS rumah
 
 Lima foto rumah memakai panel transparan bersudut membulat yang memuat nama KK, Desa Tombulang, Kecamatan Pinogaluman, Kabupaten Bolaang Mongondow Utara, Sulawesi Utara, latitude, longitude, akurasi, dan waktu. Ikon digambar langsung melalui Canvas. Tidak memakai logo, aset gambar, atau library baru. Foto dokumen KTP, KK, dan IDPEL tidak diberi panel GPS.
+# Tambahan v2.9.0 - Optimasi performa
+
+Backend Vercel menyimpan access token Google sampai mendekati kedaluwarsa, memeriksa lima foto wajib secara paralel, dan berjalan di region Singapura. APK mengirim maksimal dua JPEG secara bersamaan memakai body biner, menyiapkan kompresi setelah foto diambil saat nama KK tersedia, memakai target ukuran berbeda untuk rumah/KTP/KK/IDPEL, dan mendecode thumbnail di background. Draf Apps Script lama tetap memakai JSON/Base64 dan dapat dilanjutkan.
