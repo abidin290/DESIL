@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const api=require('./api/index.js');
+const code='A'.repeat(32);
+process.env.PETUGAS_JSON=JSON.stringify([{id:'P1',name:'Petugas 1',active:true,hash:api._test.sha256(code)}]);
+assert.equal(api._test.authenticate(code).id,'P1');
+assert.throws(()=>api._test.authenticate('1234'));
+assert.throws(()=>api._test.authenticate('B'.repeat(32)));
+const report={reportId:'12345678-1234-1234-1234-123456789abc',ids:Array.from({length:9},(_,i)=>'drive_file_id_'+i),name:'Rumah Ahmad'};
+assert.equal(api._test.validateReport(report,{id:'P1'}),'Rumah Ahmad');
+assert.throws(()=>api._test.validateReport({...report,name:''},{id:'P1'}));
+console.log('PASS: Vercel auth hash and report validation');
