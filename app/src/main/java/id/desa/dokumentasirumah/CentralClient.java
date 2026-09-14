@@ -22,12 +22,15 @@ final class CentralClient {
         try {
             try(OutputStream out=c.getOutputStream()){out.write(data);}
             int status=c.getResponseCode();
-            if(status==302 || status==303){
-                String location=c.getHeaderField("Location");c.disconnect();
-                URL next=new URL(location);
-                if(!"https".equals(next.getProtocol()) || !"script.googleusercontent.com".equals(next.getHost()) || next.getUserInfo()!=null || (next.getPort()!=-1 && next.getPort()!=443)) throw new IOException("Deployment harus Execute as Me dan akses Anyone. Periksa URL server.");
+            // Apps Script may issue more than one redirect before returning JSON.
+            for(int hop=0; (status==301||status==302||status==303||status==307||status==308) && hop<5; hop++){
+                String location=c.getHeaderField("Location"); if(location==null)throw new IOException("Redirect server tidak memiliki tujuan.");
+                c.disconnect(); URL next=new URL(new URL(endpoint),location);
+                String host=next.getHost();
+                if(!"https".equals(next.getProtocol()) || !("script.googleusercontent.com".equals(host)||"script.google.com".equals(host)) || next.getUserInfo()!=null || (next.getPort()!=-1 && next.getPort()!=443)) throw new IOException("Redirect server Google tidak valid. Periksa deployment Apps Script.");
                 c=(HttpURLConnection)next.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout(20000);c.setReadTimeout(120000);status=c.getResponseCode();
             }
+            if(status==301||status==302||status==303||status==307||status==308)throw new RetryPolicy.Failure("Server terlalu banyak mengalihkan koneksi. Periksa deployment Apps Script.",true);
             if(status!=200)throw new RetryPolicy.Failure("Server merespons HTTP "+status+". Draf tetap tersimpan; coba lagi.",status==408||status==429||status>=500);
             ByteArrayOutputStream bytes=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){bytes.write(b,0,n);if(bytes.size()>65536)throw new IOException("Respons server tidak valid.");}}
             JSONObject response;
