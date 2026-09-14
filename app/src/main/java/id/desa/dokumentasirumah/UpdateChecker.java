@@ -15,8 +15,9 @@ final class UpdateChecker {
         new Thread(() -> {
             HttpURLConnection c=null;
             try {
-                c=(HttpURLConnection)new URL(MANIFEST_URL).openConnection();
+                c=(HttpURLConnection)new URL(MANIFEST_URL+"?t="+System.currentTimeMillis()).openConnection();
                 c.setConnectTimeout(10000); c.setReadTimeout(15000); c.setInstanceFollowRedirects(true);
+                c.setUseCaches(false); c.setRequestProperty("Cache-Control","no-cache");
                 if(c.getResponseCode()!=200) throw new IOException("GitHub mengembalikan HTTP "+c.getResponseCode());
                 InputStream in=c.getInputStream(); ByteArrayOutputStream out=new ByteArrayOutputStream();
                 byte[] b=new byte[4096]; int n; while((n=in.read(b))!=-1){ if(out.size()>128*1024) throw new IOException("Manifest terlalu besar"); out.write(b,0,n); }
