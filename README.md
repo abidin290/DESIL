@@ -4,6 +4,8 @@ Aplikasi Android untuk sampai 20 petugas dengan kode akses masing-masing. Semua 
 
 APK memeriksa manifest pembaruan dari repository GitHub `abidin290/DESIL`. Buka Pengaturan > Cek pembaruan aplikasi. Jika tersedia versi baru, aplikasi membuka halaman GitHub Releases; Android tetap meminta konfirmasi sebelum memasang APK.
 
+Setiap APK baru wajib menaikkan `versionCode`, kemudian `update.json` harus memakai angka yang sama. Mengganti file APK pada Release tanpa menaikkan `versionCode` tidak akan dianggap sebagai pembaruan oleh aplikasi maupun Android.
+
 ## Berkas
 
 - APK terbaru: [dokumentasi-rumah-pusat-debug.apk](dist/dokumentasi-rumah-pusat-debug.apk).

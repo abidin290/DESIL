@@ -1,7 +1,7 @@
 {
-  "versionCode": 13,
-  "versionName": "2.7.0",
-  "releaseUrl": "https://github.com/abidin290/DESIL/releases",
-  "apkUrl": "https://github.com/abidin290/DESIL/releases",
-  "notes": "Menambahkan pemeriksaan pembaruan aplikasi dari GitHub."
+  "versionCode": 14,
+  "versionName": "2.7.1",
+  "releaseUrl": "https://github.com/abidin290/DESIL/releases/tag/v2.7.1",
+  "apkUrl": "https://github.com/abidin290/DESIL/releases/download/v2.7.1/dokumentasi-rumah-pusat-debug.apk",
+  "notes": "Memperbaiki deteksi pembaruan dan respons redirect Google Apps Script."
 }

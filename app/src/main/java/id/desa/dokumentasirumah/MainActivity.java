@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
             long currentCode=0; String currentName="versi ini";
             try { android.content.pm.PackageInfo info=getPackageManager().getPackageInfo(getPackageName(),0); currentCode=info.versionCode; currentName=info.versionName; } catch(Exception ignored) {}
             if(latest<=currentCode){new AlertDialog.Builder(this).setTitle("Aplikasi sudah terbaru").setMessage("Versi "+currentName+" sudah terpasang.").setPositiveButton("Tutup",null).show();return;}
-            String notes=manifest.optString("notes","Pembaruan tersedia."); String url=manifest.optString("releaseUrl",manifest.optString("apkUrl","https://github.com/abidin290/DESIL/releases"));
+            String notes=manifest.optString("notes","Pembaruan tersedia."); String url=manifest.optString("apkUrl",manifest.optString("releaseUrl","https://github.com/abidin290/DESIL/releases"));
             new AlertDialog.Builder(this).setTitle("Pembaruan tersedia: "+version).setMessage(notes+"\n\nAndroid akan meminta konfirmasi sebelum memasang APK.").setNegativeButton("Nanti",null).setPositiveButton("Buka unduhan",(d,w)->{try{startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));}catch(Exception e){error("Tautan unduhan tidak dapat dibuka.");}}).show();
         }));
     }
