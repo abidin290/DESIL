@@ -13,14 +13,16 @@ function authenticate(code) {
   if(!user)fail('Kode akses salah atau dinonaktifkan.',401); return user;
 }
 async function accessToken(){
-  const body=new URLSearchParams({client_id:process.env.GOOGLE_CLIENT_ID||'',client_secret:process.env.GOOGLE_CLIENT_SECRET||'',refresh_token:process.env.GOOGLE_REFRESH_TOKEN||'',grant_type:'refresh_token'});
+  for(const key of ['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'])if(!process.env[key])fail('Environment Variable '+key+' belum diisi pada Vercel Production.',500);
+  const body=new URLSearchParams({client_id:process.env.GOOGLE_CLIENT_ID,client_secret:process.env.GOOGLE_CLIENT_SECRET,refresh_token:process.env.GOOGLE_REFRESH_TOKEN,grant_type:'refresh_token'});
   const r=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body});
-  const j=await r.json().catch(()=>({})); if(!r.ok||!j.access_token)fail('Vercel belum dapat mengakses Google Drive.',503,true); return j.access_token;
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j.access_token){console.error('Google OAuth token error:',j.error||r.status,j.error_description||'');if(j.error==='invalid_client')fail('GOOGLE_CLIENT_ID dan GOOGLE_CLIENT_SECRET tidak cocok atau sudah dicabut.',500);if(j.error==='invalid_grant')fail('GOOGLE_REFRESH_TOKEN tidak valid, sudah dicabut, kedaluwarsa, atau dibuat dengan OAuth Client yang berbeda.',500);fail('Google OAuth menolak permintaan token. Periksa Vercel Function Logs.',503,true);} return j.access_token;
 }
 async function drive(path, options={}){
   const token=await accessToken(); const r=await fetch('https://www.googleapis.com'+path,{...options,headers:{...(options.headers||{}),authorization:'Bearer '+token}});
   if(r.status===404)return null; const text=await r.text(); let data={};try{data=text?JSON.parse(text):{};}catch(_){}
-  if(!r.ok)fail(r.status===429?'Kuota Google Drive sedang penuh. Coba lagi.':'Google Drive belum dapat memproses permintaan.',r.status>=500||r.status===429?503:400,r.status>=500||r.status===429); return data;
+  if(!r.ok){console.error('Google Drive API error:',r.status,data.error?.message||'');if(r.status===403)fail('Google Drive API menolak akses. Pastikan Drive API aktif dan OAuth memiliki izin Drive.',500);fail(r.status===429?'Kuota Google Drive sedang penuh. Coba lagi.':'Google Drive belum dapat memproses permintaan.',r.status>=500||r.status===429?503:400,r.status>=500||r.status===429);} return data;
 }
 async function getFile(id){return drive('/drive/v3/files/'+encodeURIComponent(id)+'?fields=id,name,mimeType,parents,appProperties,trashed,md5Checksum,description&supportsAllDrives=true');}
 function validateReport(r,user){

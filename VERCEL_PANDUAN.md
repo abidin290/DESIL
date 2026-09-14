@@ -32,3 +32,5 @@ Tekan **Deploy**. Buka `https://NAMA-PROJECT.vercel.app/api`. Respons sehat:
 ```
 
 Uji upload memakai folder pengujian terlebih dahulu. Setelah berhasil, berikan URL `/api` agar APK versi baru dapat dibuild. Jangan mematikan Apps Script.
+
+Jika Environment Variable baru ditambahkan atau diubah, buka tab **Deployments**, pilih deployment terbaru, lalu **Redeploy**. Perubahan variabel tidak diterapkan ke deployment yang sudah berjalan. `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, dan `GOOGLE_REFRESH_TOKEN` wajib berasal dari OAuth Client Web yang sama.
