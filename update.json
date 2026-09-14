@@ -1,7 +1,7 @@
 {
-  "versionCode": 14,
-  "versionName": "2.7.1",
-  "releaseUrl": "https://github.com/abidin290/DESIL/releases/tag/v2.7.1",
-  "apkUrl": "https://github.com/abidin290/DESIL/releases/download/v2.7.1/dokumentasi-rumah-pusat-debug.apk",
-  "notes": "Memperbaiki deteksi pembaruan dan respons redirect Google Apps Script."
+  "versionCode": 15,
+  "versionName": "2.8.0",
+  "releaseUrl": "https://github.com/abidin290/DESIL/releases/tag/v2.8.0",
+  "apkUrl": "https://github.com/abidin290/DESIL/releases/download/v2.8.0/dokumentasi-rumah-pusat-debug.apk",
+  "notes": "Backend baru memakai Vercel dan Google Drive API. Draf lama tetap dapat dilanjutkan melalui Apps Script."
 }

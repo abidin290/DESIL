@@ -7,10 +7,11 @@ import java.nio.file.Files;
 import java.util.Base64;
 
 final class CentralClient {
-    static final String DEFAULT_ENDPOINT="https://script.google.com/macros/s/AKfycby0jklBdmBe2FATZPx2qd0Kv-N1Mu4yCdro7EHQaqN3N2QfFHCm1Agy2m55jq7OTdkd/exec";
+    static final String DEFAULT_ENDPOINT="https://desil-eight.vercel.app/api";
+    private static final String LEGACY_ENDPOINT="https://script.google.com/macros/s/AKfycby0jklBdmBe2FATZPx2qd0Kv-N1Mu4yCdro7EHQaqN3N2QfFHCm1Agy2m55jq7OTdkd/exec";
     private final String endpoint,code;
     CentralClient(String endpoint,String code) { this.endpoint=endpoint;this.code=code; }
-    static boolean validEndpoint(String s) { return s!=null && s.matches("https://script\\.google\\.com/macros/s/[A-Za-z0-9_-]+/exec"); }
+    static boolean validEndpoint(String s) { return DEFAULT_ENDPOINT.equals(s)||LEGACY_ENDPOINT.equals(s); }
     JSONObject callWithRetry(JSONObject body,RetryPolicy.Notice notice)throws Exception{
         return RetryPolicy.run(()->call(body),Thread::sleep,notice);
     }
@@ -31,7 +32,11 @@ final class CentralClient {
                 c=(HttpURLConnection)next.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout(20000);c.setReadTimeout(120000);status=c.getResponseCode();
             }
             if(status==301||status==302||status==303||status==307||status==308)throw new RetryPolicy.Failure("Server terlalu banyak mengalihkan koneksi. Periksa deployment Apps Script.",true);
-            if(status!=200)throw new RetryPolicy.Failure("Server merespons HTTP "+status+". Draf tetap tersimpan; coba lagi.",status==408||status==429||status>=500);
+            if(status!=200){
+                InputStream problem=c.getErrorStream();
+                if(problem!=null){try{ByteArrayOutputStream detail=new ByteArrayOutputStream();byte[] b=new byte[2048];int n;while((n=problem.read(b))!=-1&&detail.size()<65536)detail.write(b,0,n);JSONObject json=new JSONObject(detail.toString("UTF-8"));String message=json.optString("message","");if(!message.isEmpty())throw new RetryPolicy.Failure(message,json.optBoolean("retryable")||status==408||status==429||status>=500);}catch(JSONException ignored){}finally{problem.close();}}
+                throw new RetryPolicy.Failure("Server merespons HTTP "+status+". Draf tetap tersimpan; coba lagi.",status==408||status==429||status>=500);
+            }
             ByteArrayOutputStream bytes=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){bytes.write(b,0,n);if(bytes.size()>65536)throw new IOException("Respons server tidak valid.");}}
             JSONObject response;
             try{response=new JSONObject(bytes.toString("UTF-8"));}catch(JSONException e){throw new IOException("Server tidak mengirim JSON. Periksa URL deployment /exec dan akses Anyone.");}

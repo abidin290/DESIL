@@ -2,6 +2,8 @@
 
 Aplikasi Android untuk sampai 20 petugas dengan kode akses masing-masing. Semua foto masuk ke satu Google Drive milik admin (Gmail biasa), melalui Google Apps Script. Petugas tidak login Google.
 
+Mulai versi 2.8.0, laporan baru dikirim melalui backend Vercel `https://desil-eight.vercel.app/api`. Draf yang sudah dimulai melalui Apps Script tetap memakai endpoint lama sampai selesai. APK versi lama tidak berubah dan tetap dapat memakai Apps Script.
+
 APK memeriksa manifest pembaruan dari repository GitHub `abidin290/DESIL`. Buka Pengaturan > Cek pembaruan aplikasi. Jika tersedia versi baru, aplikasi membuka halaman GitHub Releases; Android tetap meminta konfirmasi sebelum memasang APK.
 
 Setiap APK baru wajib menaikkan `versionCode`, kemudian `update.json` harus memakai angka yang sama. Mengganti file APK pada Release tanpa menaikkan `versionCode` tidak akan dianggap sebagai pembaruan oleh aplikasi maupun Android.

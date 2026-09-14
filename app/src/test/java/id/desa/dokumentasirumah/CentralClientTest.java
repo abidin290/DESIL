@@ -18,9 +18,10 @@ public class CentralClientTest {
             assertEquals(3,server.getRequestCount());
         }
     }
-    @Test public void onlyAcceptsAppsScriptProductionUrl(){
-        assertTrue(CentralClient.validEndpoint("https://script.google.com/macros/s/ABC_123/exec"));
-        for(String url:new String[]{"http://script.google.com/macros/s/abc/exec","https://evil.com/exec","https://script.google.com/macros/s/abc/dev","https://script.google.com@evil.com/macros/s/abc/exec"})assertFalse(CentralClient.validEndpoint(url));
+    @Test public void onlyAcceptsConfiguredVercelAndLegacyUrls(){
+        assertTrue(CentralClient.validEndpoint("https://desil-eight.vercel.app/api"));
+        assertTrue(CentralClient.validEndpoint("https://script.google.com/macros/s/AKfycby0jklBdmBe2FATZPx2qd0Kv-N1Mu4yCdro7EHQaqN3N2QfFHCm1Agy2m55jq7OTdkd/exec"));
+        for(String url:new String[]{"http://desil-eight.vercel.app/api","https://evil.com/api","https://desil-eight.vercel.app/api/other","https://script.google.com/macros/s/abc/dev"})assertFalse(CentralClient.validEndpoint(url));
     }
     @Test public void postsCodeAndRejectsApplicationError()throws Exception{
         try(MockWebServer server=new MockWebServer()){
