@@ -1,0 +1,158 @@
+# Tambahan v2.6.2 - KK tanpa bingkai dan tombol ambil samping
+
+Disepakati: foto KK tetap memakai CameraX landscape, tetapi bingkai KK dihapus agar user cukup memotret lembar KK penuh dan jelas. Foto KK tidak di-crop otomatis.
+
+Khusus KTP, bingkai rasio kartu asli tetap dipertahankan dan hasil foto tetap di-crop mengikuti bingkai. Tombol ambil foto untuk KTP/KK diubah menjadi tombol bulat di sisi kanan layar pada posisi landscape agar lebih mudah ditekan.
+
+# Tambahan v2.6 - KTP/KK landscape, crop bingkai, dan URL server tertanam
+
+Disepakati: petugas tidak lagi mengisi URL Web App di aplikasi. URL Apps Script `/exec` ditanam langsung dalam APK, sehingga layar Pengaturan hanya meminta kode akses petugas. Jika URL deployment berubah, APK harus dibuild ulang.
+
+KTP dan KK memakai CameraX dalam orientasi landscape. Khusus KTP, dokumen harus bisa disesuaikan dengan bingkai template yang menampilkan area NIK dan kotak foto kanan. Setelah gambar KTP diambil, hasil KTP otomatis di-crop mengikuti ukuran bingkai pada layar kamera. Preview dan upload memakai hasil crop KTP tersebut, bukan foto kamera penuh.
+
+---
+
+# Tambahan v2.5 - Lampiran opsional KTP, KK, dan IDPEL Listrik
+
+Disepakati: aplikasi menambah tiga foto opsional, yaitu KTP, KK, dan IDPEL Listrik. Lima foto rumah dan Nama KK tetap menjadi syarat upload; lampiran opsional hanya ikut dikirim bila tersedia.
+
+KTP, KK, dan IDPEL memakai kamera custom CameraX. KTP menampilkan bingkai ukuran kartu dan panduan AREA NIK. KK difoto penuh tanpa bingkai. IDPEL Listrik memakai bingkai label/struk yang lebih lebar. Hasil upload bernama `KTP.jpg`, `KK.jpg`, dan `IDPEL_Listrik.jpg`.
+
+Server diperbarui agar menerima 8 slot foto. Status selesai tetap hanya mewajibkan lima foto rumah. Karena memakai CameraX, APK menambah izin CAMERA dan dependency kamera; ukuran APK naik, tetapi masih wajar untuk aplikasi lapangan.
+
+---
+
+# Tambahan v2.4 - Identitas rumah pada foto depan
+
+Disepakati: foto Depan Rumah memuat identitas `Rumah <Nama KK>` dan `Desa Tombulang` bersamaan dengan titik koordinat, akurasi, dan waktu. Empat foto lain tetap memuat koordinat saja bila GPS tersedia. Nama KK diambil otomatis dari input form, sehingga input `Ahmat Sekian` menjadi label `Rumah Ahmat Sekian`.
+
+Tidak ada library baru dan tidak ada perubahan Apps Script. Label tetap ditempel pada salinan JPEG upload saja; foto draf/preview tidak ditimpa.
+
+---
+
+# Tambahan v2.3 - Koordinat pada foto upload
+
+Disepakati: saat petugas memotret, aplikasi meminta izin lokasi Android dan menyimpan koordinat terakhir yang tersedia untuk masing-masing foto. Saat upload, salinan JPEG Standar diberi label koordinat langsung pada gambar: latitude, longitude, akurasi, dan waktu. Foto draf untuk preview tetap tidak ditimpa. Jika lokasi tidak tersedia atau izin ditolak, foto tetap dapat dikirim tanpa label koordinat agar pekerjaan lapangan tidak berhenti.
+
+Tidak ada library baru dan tidak ada perubahan Apps Script. Fitur memakai LocationManager dan Canvas bawaan Android, sehingga kenaikan ukuran APK hanya kecil dari tambahan kode aplikasi.
+
+---
+
+# Tambahan v2.2 - UI ringkas dan keandalan upload
+
+Disepakati: rapikan layar utama, preview foto dengan zoom, progres bertahap, riwayat lokal, menu pengaturan, status kelengkapan server, serta retry otomatis terbatas. Rekap admin/Google Sheets tidak dibuat.
+
+Riwayat menyimpan maksimal 200 laporan di HP ini dan tidak mengambil laporan lama dari Drive. Status selesai hanya setelah konfirmasi lima file dari server. Tombol upload tetap terlihat, form dapat digulir. URL/kode masuk menu Pengaturan. Server memakai Description dan warna folder tanpa mengubah nama folder KK. Detail implementasi dan pembaruan server ada di README.md dan server/PANDUAN.md.
+
+---
+
+# Tambahan v2.1 - Kompresi Standar otomatis
+
+Laporan baru mengompres salinan upload di latar belakang, satu foto per giliran. Sisi terpanjang maksimal 1.600 piksel, target 250-500 KB, batas 500 KiB; foto sederhana dapat lebih kecil. Rasio dipertahankan dan foto kecil tidak diperbesar. Untuk foto sangat rumit resolusi dapat diturunkan lagi agar memenuhi batas. Foto draf tidak ditimpa. Cache dipakai ulang saat retry dan dibersihkan setelah sukses/hapus draf/ambil ulang. Laporan parsial versi 2.0 tetap mengirim berkas semula agar checksum server cocok. Apps Script tidak berubah.
+
+---
+
+# Revisi disepakati ? 8 September 2026 (v2)
+
+Ketentuan berikut menggantikan login/Drive per pengguna dalam PRD awal:
+- Satu Google Drive pusat milik admin, memakai Gmail biasa.
+- Lima petugas, masing-masing memakai kode akses; petugas tidak login Google.
+- Google Apps Script berjalan sebagai pemilik untuk menerima foto dan menyimpan ke folder pusat.
+- URL server dikonfigurasi sekali di HP. Kode diperiksa server dan dapat dinonaktifkan/dirotasi.
+- Alur lima foto, nama KK, preview, draf, progress, dan reset setelah sukses tetap berlaku.
+- Retry memakai ID laporan/file tetap. Identitas petugas dan waktu dicatat pada folder laporan.
+- Implementasi dan langkah pemasangan: server/PANDUAN.md.
+
+---
+
+## PRD awal (riwayat)
+
+Berikut dokumen **Product Requirement Document (PRD)** berdasarkan rancangan antarmuka dan alur aplikasi yang kamu berikan.
+
+---
+
+# Product Requirement Document (PRD)
+
+## 1. Ringkasan Produk
+
+Aplikasi Android ini berfungsi untuk mempermudah pendokumentasian foto kondisi rumah. Pengguna dapat mengambil lima sudut foto rumah, memasukkan identitas berupa **Nama KK**, dan mengunggah seluruh foto tersebut langsung ke **Google Drive**. Aplikasi akan otomatis membuatkan folder khusus sesuai dengan nama inputan pengguna.
+
+---
+
+## 2. Tujuan & Pengguna Sasaran
+
+* **Tujuan:** Efisiensi pengumpulan data visual lapangan agar tersusun rapi di cloud storage tanpa perlu membuat folder manual.
+* **Target Pengguna:** Petugas lapangan, surveyor, atau pengguna umum yang perlu mendokumentasikan data perumahan/keluarga.
+
+---
+
+## 3. Alur Pengguna (User Flow)
+
+1. **Otentikasi:** Pengguna membuka aplikasi dan melakukan *login* menggunakan akun Google (OAuth 2.0).
+2. **Pengambilan Foto:** Pengguna mengambil foto satu per satu sesuai dengan label kategori:
+* Depan Rumah
+* Dalam Rumah
+* Samping Kiri
+* Samping Kanan
+* Belakang
+
+
+3. **Input Data:** Pengguna mengisikan text field **INPUT NAMA KK** (contoh: *Budi Santoso*).
+4. **Pengiriman:** Pengguna menekan tombol **UPLOAD**.
+5. **Proses Sistem:**
+* Sistem membuat folder baru di Google Drive dengan nama *INPUT NAMA KK*.
+* Sistem mengunggah kelima foto ke dalam folder tersebut dengan nama file terstruktur.
+
+
+6. **Selesai:** Tampil notifikasi sukses, lalu form mereset kembali.
+
+---
+
+## 4. Persyaratan Fungsional (Functional Requirements)
+
+| No | Fitur | Deskripsi |
+| --- | --- | --- |
+| **FR-01** | Integrasi Google Auth | Aplikasi harus meminta otorisasi akun Google beserta akses *scope* Google Drive API. |
+| **FR-02** | Kamera & Modul Foto | Menampilkan 5 item pengambil gambar. Mengklik ikon kamera akan membuka modul kamera bawaan atau kustom untuk menangkap/mengganti foto. |
+| **FR-03** | Preview Foto | Setelah foto diambil, ikon/area menunjukkan indikator (*thumbnail* atau *checkmark*) bahwa foto sudah tersimpan sementara di lokal. |
+| **FR-04** | Form Input Nama KK | Input teks (*text field*) untuk memasukkan nama Kepala Keluarga sebagai nama folder tujuan. Wajib diisi (*validation required*). |
+| **FR-05** | Otomasi Folder Google Drive | Saat *Upload* ditekan, sistem membuat folder baru di Google Drive menggunakan nama dari **Input Nama KK**. |
+| **FR-06** | Penamaan & Unggah File | Semua foto diunggah ke folder yang baru dibuat dengan penamaan file terformat: <br>
+
+<br>• `Depan_Rumah.jpg`<br>
+
+<br>• `Dalam_Rumah.jpg`<br>
+
+<br>• `Samping_Kiri.jpg`<br>
+
+<br>• `Samping_Kanan.jpg`<br>
+
+<br>• `Belakang.jpg` |
+| **FR-07** | Progress Bar / Loading | Menampilkan indikator proses pengunggahan (*loading bar/spinner*) agar pengguna mengetahui status proses. |
+
+---
+
+## 5. Persyaratan Non-Fungsional (Non-Functional Requirements)
+
+* **Performa:** Pengunggahan memanfaatkan proses *background thread* agar UI aplikasi tidak membeku (*lag*).
+* **Keamanan:** Kredensial pengguna dikelola via Google Identity Services. Aplikasi tidak menyimpan kata sandi pengguna secara lokal.
+* **Penanganan Masalah (Error Handling):**
+* Menampilkan pesan kesalahan (*Toast/Dialog*) jika koneksi terputus saat *upload*.
+* Memvalidasi formulir: tombol **UPLOAD** tidak dapat diproses jika **Nama KK** kosong atau ada foto yang belum diambil.
+
+
+
+---
+
+## 6. Detail Desain Antarmuka (UI/UX)
+
+* **Layout Utama:**
+* **5 Baris Item Foto:** Berisi ikon kamera + label teks (*DEPAN RUMAH, DALAM RUMAH, SAMPLING KIRI, SAMPLING KANAN, BELAKANG*).
+* **Input Field:** `INPUT NAMA KK` (Posisikan di bagian bawah deretan foto).
+* **Tombol Aksi:** Button `UPLOAD` terletak di paling bawah.
+
+
+
+---
+
+Mau saya buatkan juga skema struktur folder/kodenya untuk Android Studio (Kotlin/Java)?
