@@ -156,3 +156,6 @@ Aplikasi Android ini berfungsi untuk mempermudah pendokumentasian foto kondisi r
 ---
 
 Mau saya buatkan juga skema struktur folder/kodenya untuk Android Studio (Kotlin/Java)?
+# Tambahan v2.8.1 - Panel GPS rumah
+
+Lima foto rumah memakai panel transparan bersudut membulat yang memuat nama KK, Desa Tombulang, Kecamatan Pinogaluman, Kabupaten Bolaang Mongondow Utara, Sulawesi Utara, latitude, longitude, akurasi, dan waktu. Ikon digambar langsung melalui Canvas. Tidak memakai logo, aset gambar, atau library baru. Foto dokumen KTP, KK, dan IDPEL tidak diberi panel GPS.

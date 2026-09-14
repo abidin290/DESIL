@@ -305,7 +305,7 @@ public class MainActivity extends Activity {
                         if(i>=FormRules.REQUIRED_COUNT && !photo(i).isFile())continue;
                         update(Math.min(i,5),"Menyiapkan "+FormRules.LABELS[i]+"...");
                         LocationStamp stamp=LocationStamp.fromDraft(draft,i);
-                        uploadPhotos[i]=i==0?compressor.prepare(photo(i),stamp,"Rumah "+folderName,"Desa Tombulang"):compressor.prepare(photo(i),stamp);
+                        uploadPhotos[i]=compressor.prepare(photo(i),stamp,"RUMAH "+folderName.toUpperCase(new Locale("id","ID")),"Desa Tombulang, Kec. Pinogaluman,","Kab. Bolaang Mongondow Utara, Sulawesi Utara");
                     }
                 }
                 if(!draft.contains("reportId")){

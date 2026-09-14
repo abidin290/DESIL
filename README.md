@@ -4,6 +4,8 @@ Aplikasi Android untuk sampai 20 petugas dengan kode akses masing-masing. Semua 
 
 Mulai versi 2.8.0, laporan baru dikirim melalui backend Vercel `https://desil-eight.vercel.app/api`. Draf yang sudah dimulai melalui Apps Script tetap memakai endpoint lama sampai selesai. APK versi lama tidak berubah dan tetap dapat memakai Apps Script.
 
+Mulai versi 2.8.1, lima foto rumah yang memiliki koordinat memakai panel GPS baru berisi nama rumah, alamat Desa Tombulang, latitude, longitude, akurasi, dan waktu. Panel digambar dengan API Android tanpa aset logo atau library baru.
+
 APK memeriksa manifest pembaruan dari repository GitHub `abidin290/DESIL`. Buka Pengaturan > Cek pembaruan aplikasi. Jika tersedia versi baru, aplikasi membuka halaman GitHub Releases; Android tetap meminta konfirmasi sebelum memasang APK.
 
 Setiap APK baru wajib menaikkan `versionCode`, kemudian `update.json` harus memakai angka yang sama. Mengganti file APK pada Release tanpa menaikkan `versionCode` tidak akan dianggap sebagai pembaruan oleh aplikasi maupun Android.
