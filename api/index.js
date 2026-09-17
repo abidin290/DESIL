@@ -143,7 +143,7 @@ async function handle(r){
 }
 module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
-  if(req.method==='GET')return res.status(200).json({ok:true,service:'Dokumentasi Rumah Vercel',version:2,storage:storageDriver()});
+  if(req.method==='GET')return res.status(200).json({ok:true,service:'Dokumentasi Rumah Vercel',version:3,storage:storageDriver(),folderMode:'nama-kk'});
   if(req.method!=='POST')return res.status(405).json({ok:false,message:'Metode tidak didukung.'});
   try{
     let request=req.body||{};

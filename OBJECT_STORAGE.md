@@ -54,7 +54,7 @@ Tiga lampiran terakhir hanya dibuat bila pengguna memotretnya. Bucket sebaiknya 
 
 1. Tambahkan seluruh variabel S3 di Vercel tanpa menghapus variabel Google.
 2. Redeploy commit backend terbaru.
-3. Buka `https://desil-eight.vercel.app/api`. Respons harus menampilkan `"version":2` dan `"storage":"s3"`.
+3. Buka `https://desil-eight.vercel.app/api`. Respons harus menampilkan `"version":3`, `"storage":"s3"`, dan `"folderMode":"nama-kk"`.
 4. Kirim satu laporan uji dari aplikasi. Pastikan folder `laporan/<Nama KK>/<ID laporan>/` berisi `manifest.json` dan lima foto wajib.
 5. Bila gagal, ubah `STORAGE_DRIVER=drive` lalu redeploy untuk mengembalikan laporan baru ke Drive. Draf yang sudah memperoleh ID `obj_` harus dilanjutkan setelah konfigurasi S3 diperbaiki.
 
