@@ -1,7 +1,8 @@
 {
-  "versionCode": 18,
-  "versionName": "2.10.0",
+  "versionCode": 19,
+  "versionName": "2.11.0",
   "releaseUrl": "https://github.com/abidin290/DESIL/releases",
-  "apkUrl": "https://github.com/abidin290/DESIL/releases",
-  "notes": "Backend Object Storage S3/MinIO aktif. Tampilan aplikasi kini memakai istilah penyimpanan pusat dan tetap mendukung draf Google Drive lama."
+  "apkUrl": "https://raw.githubusercontent.com/abidin290/DESIL/main/dist/dokumentasi-rumah-pusat-debug.apk?version=19",
+  "sha256": "AEF589346B870F18D5C89D42BA22BC8963A45B024F2E3F4075E632795C794DED",
+  "notes": "Pembaruan sekarang dapat diunduh dan dipasang langsung dari aplikasi tanpa membuka halaman GitHub. Folder Object Storage tetap disusun berdasarkan Nama KK."
 }

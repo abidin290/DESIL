@@ -46,6 +46,7 @@ public class MainActivity extends Activity {
     private AccessStore access;
     private LocationManager locationManager;
     private int pendingLocationPhoto=-1;
+    private boolean updateDownloadBusy=false;
 
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
@@ -60,6 +61,14 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(0xfff4f8f6);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         buildUi(); refresh();
+    }
+    @Override protected void onResume(){
+        super.onResume();
+        SharedPreferences updates=getSharedPreferences("updates",MODE_PRIVATE);
+        if(updates.getBoolean("waitingInstallPermission",false)&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.O&&getPackageManager().canRequestPackageInstalls()){
+            updates.edit().putBoolean("waitingInstallPermission",false).apply();
+            File apk=new File(getFilesDir(),"updates/app-update.apk");if(apk.isFile())new Handler(Looper.getMainLooper()).postDelayed(()->installUpdate(apk),300);
+        }
     }
     private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
     private GradientDrawable bg(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
@@ -112,9 +121,34 @@ public class MainActivity extends Activity {
             long currentCode=0; String currentName="versi ini";
             try { android.content.pm.PackageInfo info=getPackageManager().getPackageInfo(getPackageName(),0); currentCode=info.versionCode; currentName=info.versionName; } catch(Exception ignored) {}
             if(latest<=currentCode){new AlertDialog.Builder(this).setTitle("Aplikasi sudah terbaru").setMessage("Versi "+currentName+" sudah terpasang.").setPositiveButton("Tutup",null).show();return;}
-            String notes=manifest.optString("notes","Pembaruan tersedia."); String url=manifest.optString("apkUrl",manifest.optString("releaseUrl","https://github.com/abidin290/DESIL/releases"));
-            new AlertDialog.Builder(this).setTitle("Pembaruan tersedia: "+version).setMessage(notes+"\n\nAndroid akan meminta konfirmasi sebelum memasang APK.").setNegativeButton("Nanti",null).setPositiveButton("Buka unduhan",(d,w)->{try{startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));}catch(Exception e){error("Tautan unduhan tidak dapat dibuka.");}}).show();
+            String notes=manifest.optString("notes","Pembaruan tersedia."); String url=manifest.optString("apkUrl","");String sha256=manifest.optString("sha256","");
+            new AlertDialog.Builder(this).setTitle("Pembaruan tersedia: "+version).setMessage(notes+"\n\nAPK akan diunduh langsung. Android tetap meminta konfirmasi sebelum memasang.").setNegativeButton("Nanti",null).setPositiveButton("Unduh & pasang",(d,w)->downloadUpdate(url,sha256)).show();
         }));
+    }
+    private void downloadUpdate(String url,String sha256){
+        if(updateDownloadBusy)return;
+        if(url==null||url.trim().isEmpty()){error("Alamat APK belum tersedia pada server pembaruan.");return;}
+        updateDownloadBusy=true;
+        final ProgressDialog dialog=new ProgressDialog(this);dialog.setTitle("Mengunduh pembaruan");dialog.setMessage("Menyiapkan unduhan…");dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);dialog.setMax(100);dialog.setProgress(0);dialog.setCancelable(false);dialog.show();
+        UpdateChecker.download(this,url,sha256,new UpdateChecker.DownloadCallback(){
+            public void progress(int percent){runOnUiThread(()->{dialog.setProgress(percent);dialog.setMessage("Mengunduh APK… "+percent+"%");});}
+            public void done(File apk,Exception failure){runOnUiThread(()->{updateDownloadBusy=false;dialog.dismiss();if(failure!=null){new AlertDialog.Builder(MainActivity.this).setTitle("Pembaruan gagal diunduh").setMessage(failure.getMessage()+"\n\nCoba lagi saat koneksi stabil.").setPositiveButton("Tutup",null).show();return;}installUpdate(apk);});}
+        });
+    }
+    private void installUpdate(File apk){
+        if(!apk.isFile()){error("Berkas pembaruan tidak ditemukan.");return;}
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O&&!getPackageManager().canRequestPackageInstalls()){
+            getSharedPreferences("updates",MODE_PRIVATE).edit().putBoolean("waitingInstallPermission",true).apply();
+            try{Intent settings=new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName()));startActivity(settings);Toast.makeText(this,"Izinkan pemasangan, lalu kembali ke aplikasi.",Toast.LENGTH_LONG).show();}
+            catch(Exception e){error("Pengaturan izin pemasangan tidak dapat dibuka.");}
+            return;
+        }
+        try{
+            getSharedPreferences("updates",MODE_PRIVATE).edit().putBoolean("waitingInstallPermission",false).apply();
+            Uri uri=FileProvider.getUriForFile(this,getPackageName()+".photos",apk);
+            Intent install=new Intent(Intent.ACTION_VIEW).setDataAndType(uri,"application/vnd.android.package-archive").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(install);
+        }catch(Exception e){error("Pemasang Android tidak dapat dibuka.");}
     }
     private void requestReset(){
         new AlertDialog.Builder(this).setTitle("Hapus draf lokal?").setMessage("Foto dan nama dalam draf ini akan dihapus. Riwayat dan foto di Drive tetap ada.").setNegativeButton("Batal",null).setPositiveButton("Hapus draf",(d,w)->{

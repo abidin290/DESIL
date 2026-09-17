@@ -1,3 +1,21 @@
+# Validasi v2.11.0 - Pembaruan langsung dari aplikasi
+
+- APK: dokumentasi-rumah-pusat-debug.apk, versionCode 19 / versionName 2.11.0, 4.472.476 byte.
+- SHA-256: AEF589346B870F18D5C89D42BA22BC8963A45B024F2E3F4075E632795C794DED.
+- Menu Cek pembaruan mengunduh APK langsung ke penyimpanan privat aplikasi dan menampilkan progres.
+- APK hasil unduhan wajib cocok dengan SHA-256 pada `update.json`; berkas ditolak bila berbeda.
+- APK dibuka melalui `FileProvider`, tanpa memberikan akses umum ke penyimpanan aplikasi.
+- Android 8+ diarahkan ke izin instalasi aplikasi tidak dikenal bila izin belum diberikan, lalu pemasangan dilanjutkan setelah kembali.
+- Konfirmasi pemasangan dari sistem Android tetap wajib.
+- Gradle `testDebugUnitTest`, `lintDebug`, dan `assembleDebug` LULUS.
+- `apksigner verify` LULUS menggunakan APK Signature Scheme v2.
+
+## Batas v2.11.0
+
+Versi sebelum 2.11.0 masih menggunakan browser saat mengunduh pembaruan ini. Setelah 2.11.0 terpasang, pembaruan berikutnya dapat diproses langsung dari aplikasi. Alur izin dan pemasangan tetap perlu diuji pada HP fisik karena layar izin berbeda antarprodusen Android.
+
+---
+
 # Validasi v2.10.0 - Object Storage S3/MinIO
 
 - APK: dokumentasi-rumah-pusat-debug.apk, versionCode 18 / versionName 2.10.0, 4.472.396 byte.

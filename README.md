@@ -14,7 +14,9 @@ Laporan Object Storage baru disusun sebagai `laporan/<Nama KK>/<ID laporan>/`. S
 
 Versi 2.10.0 menyesuaikan tulisan pada aplikasi menjadi “penyimpanan pusat” agar tetap sesuai ketika operator Object Storage diganti melalui konfigurasi Vercel.
 
-APK memeriksa manifest pembaruan dari repository GitHub `abidin290/DESIL`. Buka Pengaturan > Cek pembaruan aplikasi. Jika tersedia versi baru, aplikasi membuka halaman GitHub Releases; Android tetap meminta konfirmasi sebelum memasang APK.
+APK memeriksa manifest pembaruan dari repository GitHub `abidin290/DESIL` melalui Pengaturan > Cek pembaruan aplikasi. Versi sampai 2.10.0 menyerahkan unduhan ke browser.
+
+Mulai versi 2.11.0, menu tersebut mengunduh APK langsung di dalam aplikasi, menampilkan progres, memeriksa SHA-256, lalu membuka pemasang Android. Pada pemakaian pertama, Android mungkin meminta izin “Instal aplikasi tidak dikenal” untuk Dokumentasi Rumah. Konfirmasi pemasangan dari Android tetap wajib.
 
 Setiap APK baru wajib menaikkan `versionCode`, kemudian `update.json` harus memakai angka yang sama. Mengganti file APK pada Release tanpa menaikkan `versionCode` tidak akan dianggap sebagai pembaruan oleh aplikasi maupun Android.
 
