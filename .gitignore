@@ -5,3 +5,7 @@ local.properties
 *.keystore
 .idea/
 testing/avd/
+.vercel/
+.env
+.env.*
+node_modules/

@@ -8,6 +8,8 @@ Mulai versi 2.8.1, lima foto rumah yang memiliki koordinat memakai panel GPS bar
 
 Versi 2.9.0 mempercepat laporan Vercel dengan upload JPEG biner maksimal dua file bersamaan, cache access token Google, verifikasi Drive paralel, region Singapura, kompresi lebih awal dan adaptif, serta decode thumbnail di background. Draf lama dari Apps Script tetap memakai protokol JSON/Base64 lama.
 
+Backend Vercel juga mendukung Object Storage S3-compatible/MinIO tanpa mengubah APK. Laporan Object Storage memakai ID `obj_`, sementara laporan dengan ID lama tetap diarahkan ke Google Drive. Konfigurasi dan langkah aktivasi ada di [OBJECT_STORAGE.md](OBJECT_STORAGE.md).
+
 APK memeriksa manifest pembaruan dari repository GitHub `abidin290/DESIL`. Buka Pengaturan > Cek pembaruan aplikasi. Jika tersedia versi baru, aplikasi membuka halaman GitHub Releases; Android tetap meminta konfirmasi sebelum memasang APK.
 
 Setiap APK baru wajib menaikkan `versionCode`, kemudian `update.json` harus memakai angka yang sama. Mengganti file APK pada Release tanpa menaikkan `versionCode` tidak akan dianggap sebagai pembaruan oleh aplikasi maupun Android.

@@ -1,0 +1,8 @@
+{
+  "name": "desil-vercel-backend",
+  "version": "2.0.0",
+  "private": true,
+  "engines": {"node": ">=20"},
+  "dependencies": {"@aws-sdk/client-s3": "^3.893.0"},
+  "scripts": {"test": "node backend-test.cjs"}
+}
