@@ -1,8 +1,8 @@
 {
-  "versionCode": 19,
-  "versionName": "2.11.0",
+  "versionCode": 20,
+  "versionName": "2.11.1",
   "releaseUrl": "https://github.com/abidin290/DESIL/releases",
-  "apkUrl": "https://raw.githubusercontent.com/abidin290/DESIL/main/dist/dokumentasi-rumah-pusat-debug.apk?version=19",
-  "sha256": "AEF589346B870F18D5C89D42BA22BC8963A45B024F2E3F4075E632795C794DED",
-  "notes": "Pembaruan sekarang dapat diunduh dan dipasang langsung dari aplikasi tanpa membuka halaman GitHub. Folder Object Storage tetap disusun berdasarkan Nama KK."
+  "apkUrl": "https://raw.githubusercontent.com/abidin290/DESIL/main/dist/dokumentasi-rumah-pusat-debug.apk?version=20",
+  "sha256": "BD3B078401724D14A67D23A4A19C78D046B85EF1DD2F8A6C0D351717CA676FA0",
+  "notes": "Versi uji coba untuk memastikan proses unduh dan pemasangan pembaruan langsung dari aplikasi berjalan dengan benar."
 }

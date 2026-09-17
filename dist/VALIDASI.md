@@ -1,3 +1,14 @@
+# Validasi v2.11.1 - Uji pembaruan internal
+
+- APK: dokumentasi-rumah-pusat-debug.apk, versionCode 20 / versionName 2.11.1, 4.472.476 byte.
+- SHA-256: BD3B078401724D14A67D23A4A19C78D046B85EF1DD2F8A6C0D351717CA676FA0.
+- Versi dinaikkan khusus untuk menguji deteksi, unduhan, verifikasi hash, dan pemasangan dari aplikasi versi 2.11.0.
+- Tidak ada perubahan pada upload Object Storage, folder Nama KK, kamera, atau label koordinat.
+- Gradle `testDebugUnitTest`, `lintDebug`, dan `assembleDebug` LULUS.
+- `apksigner verify` LULUS menggunakan APK Signature Scheme v2.
+
+---
+
 # Validasi v2.11.0 - Pembaruan langsung dari aplikasi
 
 - APK: dokumentasi-rumah-pusat-debug.apk, versionCode 19 / versionName 2.11.0, 4.472.476 byte.
