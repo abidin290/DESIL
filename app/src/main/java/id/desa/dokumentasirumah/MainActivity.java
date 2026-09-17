@@ -97,7 +97,7 @@ public class MainActivity extends Activity {
         LinearLayout footer=new LinearLayout(this);footer.setOrientation(LinearLayout.VERTICAL);footer.setPadding(dp(20),dp(8),dp(20),dp(12));footer.setBackgroundColor(Color.WHITE);root.addView(footer,new LinearLayout.LayoutParams(-1,-2));
         progress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);progress.setMax(12);progress.setProgressTintList(android.content.res.ColorStateList.valueOf(TEAL));add(footer,progress,0);
         status=text("Lengkapi lima foto dan nama KK.",12,MUTED);status.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);add(footer,status,4);
-        upload=button("Upload ke Drive pusat",true);upload.setOnClickListener(v->send());add(footer,upload,8);
+        upload=button("Upload ke penyimpanan pusat",true);upload.setOnClickListener(v->send());add(footer,upload,8);
         setContentView(root);
     }
     private void showSettings(){
@@ -165,12 +165,12 @@ public class MainActivity extends Activity {
             ((TextView)rows[i].getChildAt(2)).setTextSize(have[i]?12:23);
             rows[i].setEnabled(!busy);
         }
-        account.setText(access.get("workerName").isEmpty()?"Drive pusat - Masukkan kode akses":"Drive pusat - "+access.get("workerName"));
+        account.setText(access.get("workerName").isEmpty()?"Penyimpanan pusat - Masukkan kode akses":"Penyimpanan pusat - "+access.get("workerName"));
 
         count.setText(n+"/5 foto wajib");name.setEnabled(!busy&&!locked());connect.setEnabled(!busy);historyButton.setEnabled(!busy);progress.setVisibility(busy?View.VISIBLE:View.GONE);
         boolean ready=FormRules.ready(name.getText().toString(),have);upload.setEnabled(!busy&&ready);upload.setAlpha(!busy&&ready?1f:.45f);
-        upload.setText(busy?"Sedang memproses…":locked()?"Lanjutkan upload  ↑":"Upload ke Drive pusat");
-        if(!busy)status.setText(locked()?"Draf belum selesai. Lanjutkan upload laporan ini.":ready?"Siap dikirim ke Drive pusat.":"Lengkapi lima foto dan nama KK.");
+        upload.setText(busy?"Sedang memproses…":locked()?"Lanjutkan upload  ↑":"Upload ke penyimpanan pusat");
+        if(!busy)status.setText(locked()?"Draf belum selesai. Lanjutkan upload laporan ini.":ready?"Siap dikirim ke penyimpanan pusat.":"Lengkapi lima foto dan nama KK.");
     }
     private Bitmap cameraIcon(){Bitmap b=Bitmap.createBitmap(dp(52),dp(52),Bitmap.Config.ARGB_8888);Canvas c=new Canvas(b);c.scale(b.getWidth()/52f,b.getHeight()/52f);Paint p=new Paint(3);p.setColor(TEAL);c.drawRoundRect(10,18,42,38,4,4,p);c.drawRoundRect(18,13,31,23,2,2,p);p.setColor(0xffeaf3ef);c.drawCircle(26,28,8,p);p.setColor(TEAL);c.drawCircle(26,28,5,p);return b;}
     private void photoActions(int i){
@@ -247,7 +247,7 @@ public class MainActivity extends Activity {
     private void configure(){
         LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(24),dp(12),dp(24),0);
         EditText code=new EditText(this);code.setHint("Kode akses petugas");code.setSingleLine(true);code.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);add(box,code,0);
-        add(box,text("Masukkan kode dari admin. Server Drive pusat sudah tertanam di aplikasi.",12,MUTED),12);
+        add(box,text("Masukkan kode dari admin. Server penyimpanan pusat sudah tertanam di aplikasi.",12,MUTED),12);
         AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Kode akses petugas").setView(box).setNegativeButton("Batal",null).setPositiveButton("Simpan",null).create();
         dialog.setOnShowListener(d->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
             String endpoint=CentralClient.DEFAULT_ENDPOINT, secret=code.getText().toString().trim().toUpperCase(java.util.Locale.ROOT);
@@ -259,7 +259,7 @@ public class MainActivity extends Activity {
                 String id=result.getString("workerId");
                 if(locked() && !id.equals(draft.getString("workerId","")))throw new IOException("Draf ini milik petugas lain. Gunakan kode petugas yang sama.");
                 access.save(endpoint,secret,id,result.getString("workerName"));
-                runOnUiThread(()->{busy=false;refresh();status.setText("Kode terverifikasi. Upload akan masuk ke Drive pusat.");});
+                runOnUiThread(()->{busy=false;refresh();status.setText("Kode terverifikasi. Upload akan masuk ke penyimpanan pusat.");});
             }catch(Exception e){runOnUiThread(()->{busy=false;refresh();error(e.getMessage());});}});
         }));dialog.show();
     }
@@ -333,7 +333,7 @@ public class MainActivity extends Activity {
                 record("Selesai","Kelima foto telah dikonfirmasi server.");
                 update(15,"Laporan selesai.");
                 final String receipt=result.getString("reportId");
-                runOnUiThread(()->{busy=false;getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);clearDraft();status.setText("Lima foto berhasil disimpan ke Drive pusat.");new AlertDialog.Builder(this).setTitle("Upload berhasil").setMessage("Nama KK: "+folderName+"\nID laporan: "+receipt+"\n\nForm siap untuk rumah berikutnya.").setPositiveButton("Selesai",null).show();});
+                runOnUiThread(()->{busy=false;getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);clearDraft();status.setText("Lima foto berhasil disimpan ke penyimpanan pusat.");new AlertDialog.Builder(this).setTitle("Upload berhasil").setMessage("Nama KK: "+folderName+"\nID laporan: "+receipt+"\n\nForm siap untuk rumah berikutnya.").setPositiveButton("Selesai",null).show();});
             }catch(Exception e){try{record("Belum selesai",e.getMessage()==null?"Upload terhenti. Lanjutkan draf.":e.getMessage());}catch(Exception ignored){}runOnUiThread(()->{busy=false;getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);refresh();error(e.getLocalizedMessage()==null?"Upload gagal. Draf tetap tersimpan.":e.getLocalizedMessage());});}
         });
     }

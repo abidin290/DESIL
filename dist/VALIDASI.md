@@ -1,3 +1,20 @@
+# Validasi v2.10.0 - Object Storage S3/MinIO
+
+- APK: dokumentasi-rumah-pusat-debug.apk, versionCode 18 / versionName 2.10.0, 4.472.396 byte.
+- SHA-256: 43BC8A4E8D10B1C063FD81866BE4D3E98B315DFEB71A4C470A377DCB5721B3F1.
+- Backend Vercel versi 2 telah dikonfirmasi aktif dengan `storage: s3` oleh admin.
+- APK tetap memakai endpoint Vercel yang sama; perpindahan operator S3-compatible berikutnya tidak memerlukan perubahan APK.
+- Tulisan UI `Drive pusat` diganti menjadi `penyimpanan pusat` agar sesuai dengan Object Storage dan draf Google Drive lama.
+- `update.json` diselaraskan ke versionCode 18 / versionName 2.10.0.
+- Gradle `testDebugUnitTest`, `lintDebug`, dan `assembleDebug` LULUS.
+- `apksigner verify` LULUS menggunakan APK Signature Scheme v2.
+
+## Batas v2.10.0
+
+Build dan protokol backend sudah diperiksa. Upload foto nyata ke bucket `takara` tetap perlu diuji dari satu HP sebelum dipakai serentak oleh petugas.
+
+---
+
 # Validasi v2.6.2 - KK tanpa bingkai dan tombol ambil bulat samping
 
 - APK: dokumentasi-rumah-pusat-debug.apk, versionCode 12 / versionName 2.6.2, 4.456.012 byte.

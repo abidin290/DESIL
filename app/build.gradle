@@ -6,8 +6,8 @@ android {
         applicationId 'id.desa.dokumentasirumah'
         minSdk 26
         targetSdk 35
-        versionCode 17
-        versionName '2.9.0'
+        versionCode 18
+        versionName '2.10.0'
         testInstrumentationRunner 'id.desa.dokumentasirumah.CompressionInstrumentation'
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_11; targetCompatibility JavaVersion.VERSION_11 }

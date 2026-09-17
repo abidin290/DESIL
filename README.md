@@ -1,6 +1,6 @@
-# Dokumentasi Rumah - Drive Pusat v2.5
+# Dokumentasi Rumah - Penyimpanan Pusat
 
-Aplikasi Android untuk sampai 20 petugas dengan kode akses masing-masing. Semua foto masuk ke satu Google Drive milik admin (Gmail biasa), melalui Google Apps Script. Petugas tidak login Google.
+Aplikasi Android untuk sampai 20 petugas dengan kode akses masing-masing. Laporan terbaru masuk ke Object Storage melalui backend Vercel. Draf lama tetap dapat memakai Google Drive/Google Apps Script. Petugas tidak perlu login ke layanan penyimpanan.
 
 Mulai versi 2.8.0, laporan baru dikirim melalui backend Vercel `https://desil-eight.vercel.app/api`. Draf yang sudah dimulai melalui Apps Script tetap memakai endpoint lama sampai selesai. APK versi lama tidak berubah dan tetap dapat memakai Apps Script.
 
@@ -9,6 +9,8 @@ Mulai versi 2.8.1, lima foto rumah yang memiliki koordinat memakai panel GPS bar
 Versi 2.9.0 mempercepat laporan Vercel dengan upload JPEG biner maksimal dua file bersamaan, cache access token Google, verifikasi Drive paralel, region Singapura, kompresi lebih awal dan adaptif, serta decode thumbnail di background. Draf lama dari Apps Script tetap memakai protokol JSON/Base64 lama.
 
 Backend Vercel juga mendukung Object Storage S3-compatible/MinIO tanpa mengubah APK. Laporan Object Storage memakai ID `obj_`, sementara laporan dengan ID lama tetap diarahkan ke Google Drive. Konfigurasi dan langkah aktivasi ada di [OBJECT_STORAGE.md](OBJECT_STORAGE.md).
+
+Versi 2.10.0 menyesuaikan tulisan pada aplikasi menjadi “penyimpanan pusat” agar tetap sesuai ketika operator Object Storage diganti melalui konfigurasi Vercel.
 
 APK memeriksa manifest pembaruan dari repository GitHub `abidin290/DESIL`. Buka Pengaturan > Cek pembaruan aplikasi. Jika tersedia versi baru, aplikasi membuka halaman GitHub Releases; Android tetap meminta konfirmasi sebelum memasang APK.
 
@@ -28,7 +30,7 @@ Setiap APK baru wajib menaikkan `versionCode`, kemudian `update.json` harus mema
 3. Ambil foto depan, dalam, samping kiri, samping kanan, dan belakang. Saat pertama kali memotret, izinkan lokasi agar koordinat dapat ditempel pada foto upload. Ketuk foto untuk melihat atau mengambil ulang.
 4. Bila tersedia, ambil lampiran opsional: KTP, KK, dan IDPEL Listrik. Lampiran ini memakai kamera CameraX; KTP memiliki bingkai rasio kartu dan panduan area NIK, sedangkan KK difoto penuh tanpa bingkai.
 5. Isi nama kepala keluarga lalu upload. Draf tersimpan otomatis dan bisa dilanjutkan jika internet terputus.
-6. Setelah lima foto rumah wajib dikonfirmasi server, tampil ID laporan dan form dikosongkan. Admin melihat hasil di Drive pusat.
+6. Setelah lima foto rumah wajib dikonfirmasi server, tampil ID laporan dan form dikosongkan. Admin melihat hasil di penyimpanan pusat.
 
 URL Web App sudah diisi di source. Kode akses petugas tetap dimasukkan dari layar aplikasi. Foto lokal bisa diuji sebelum server dipasang; upload sungguhan baru tersedia setelah deployment admin selesai.
 

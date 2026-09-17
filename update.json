@@ -1,7 +1,7 @@
 {
-  "versionCode": 17,
-  "versionName": "2.9.0",
-  "releaseUrl": "https://github.com/abidin290/DESIL/releases/tag/v2.9.0",
-  "apkUrl": "https://github.com/abidin290/DESIL/releases/download/v2.9.0/dokumentasi-rumah-pusat-debug.apk",
-  "notes": "Peningkatan performa upload: transfer biner, dua foto paralel, cache token Google, kompresi adaptif, dan thumbnail background."
+  "versionCode": 18,
+  "versionName": "2.10.0",
+  "releaseUrl": "https://github.com/abidin290/DESIL/releases",
+  "apkUrl": "https://github.com/abidin290/DESIL/releases",
+  "notes": "Backend Object Storage S3/MinIO aktif. Tampilan aplikasi kini memakai istilah penyimpanan pusat dan tetap mendukung draf Google Drive lama."
 }
