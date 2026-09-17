@@ -35,16 +35,18 @@ PETUGAS_JSON
 Setiap laporan disimpan secara privat dengan struktur tetap:
 
 ```text
-laporan/<reportId>/manifest.json
-laporan/<reportId>/Depan_Rumah.jpg
-laporan/<reportId>/Dalam_Rumah.jpg
-laporan/<reportId>/Samping_Kiri.jpg
-laporan/<reportId>/Samping_Kanan.jpg
-laporan/<reportId>/Belakang.jpg
-laporan/<reportId>/KTP.jpg
-laporan/<reportId>/KK.jpg
-laporan/<reportId>/IDPEL_Listrik.jpg
+laporan/<Nama KK>/<reportId>/manifest.json
+laporan/<Nama KK>/<reportId>/Depan_Rumah.jpg
+laporan/<Nama KK>/<reportId>/Dalam_Rumah.jpg
+laporan/<Nama KK>/<reportId>/Samping_Kiri.jpg
+laporan/<Nama KK>/<reportId>/Samping_Kanan.jpg
+laporan/<Nama KK>/<reportId>/Belakang.jpg
+laporan/<Nama KK>/<reportId>/KTP.jpg
+laporan/<Nama KK>/<reportId>/KK.jpg
+laporan/<Nama KK>/<reportId>/IDPEL_Listrik.jpg
 ```
+
+Nama KK dibersihkan dari karakter garis miring dan karakter kontrol sebelum dijadikan folder. `reportId` tetap dipakai sebagai subfolder agar dua keluarga dengan nama yang sama tidak saling menimpa. Draf Object Storage lama dengan struktur `laporan/<reportId>/` tetap dapat dilanjutkan.
 
 Tiga lampiran terakhir hanya dibuat bila pengguna memotretnya. Bucket sebaiknya tetap **private**. Backend memakai operasi S3 `PutObject`, `GetObject`, dan `HeadObject`, sehingga access key perlu izin read/write object pada bucket `takara`.
 
@@ -53,7 +55,7 @@ Tiga lampiran terakhir hanya dibuat bila pengguna memotretnya. Bucket sebaiknya 
 1. Tambahkan seluruh variabel S3 di Vercel tanpa menghapus variabel Google.
 2. Redeploy commit backend terbaru.
 3. Buka `https://desil-eight.vercel.app/api`. Respons harus menampilkan `"version":2` dan `"storage":"s3"`.
-4. Kirim satu laporan uji dari aplikasi. Pastikan folder `laporan/<ID laporan>/` berisi `manifest.json` dan lima foto wajib.
+4. Kirim satu laporan uji dari aplikasi. Pastikan folder `laporan/<Nama KK>/<ID laporan>/` berisi `manifest.json` dan lima foto wajib.
 5. Bila gagal, ubah `STORAGE_DRIVER=drive` lalu redeploy untuk mengembalikan laporan baru ke Drive. Draf yang sudah memperoleh ID `obj_` harus dilanjutkan setelah konfigurasi S3 diperbaiki.
 
 Untuk pindah operator S3-compatible di kemudian hari, ubah `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, access key, secret key, dan bila perlu `S3_FORCE_PATH_STYLE`. APK tidak perlu dibangun ulang. Object lama tidak otomatis dipindahkan ke operator baru.

@@ -10,6 +10,8 @@ Versi 2.9.0 mempercepat laporan Vercel dengan upload JPEG biner maksimal dua fil
 
 Backend Vercel juga mendukung Object Storage S3-compatible/MinIO tanpa mengubah APK. Laporan Object Storage memakai ID `obj_`, sementara laporan dengan ID lama tetap diarahkan ke Google Drive. Konfigurasi dan langkah aktivasi ada di [OBJECT_STORAGE.md](OBJECT_STORAGE.md).
 
+Laporan Object Storage baru disusun sebagai `laporan/<Nama KK>/<ID laporan>/`. Subfolder ID laporan mencegah data tertimpa ketika ada Nama KK yang sama. Struktur laporan Object Storage lama tetap didukung.
+
 Versi 2.10.0 menyesuaikan tulisan pada aplikasi menjadi “penyimpanan pusat” agar tetap sesuai ketika operator Object Storage diganti melalui konfigurasi Vercel.
 
 APK memeriksa manifest pembaruan dari repository GitHub `abidin290/DESIL`. Buka Pengaturan > Cek pembaruan aplikasi. Jika tersedia versi baru, aplikasi membuka halaman GitHub Releases; Android tetap meminta konfirmasi sebelum memasang APK.

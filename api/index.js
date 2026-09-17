@@ -3,6 +3,7 @@ const crypto = require('node:crypto');
 const PHOTO_NAMES = ['Depan_Rumah.jpg','Dalam_Rumah.jpg','Samping_Kiri.jpg','Samping_Kanan.jpg','Belakang.jpg','KTP.jpg','KK.jpg','IDPEL_Listrik.jpg'];
 const MAX_PHOTO = 4 * 1024 * 1024;
 const OBJECT_PREFIX = 'obj_';
+const NAMED_OBJECT_PREFIX = 'obj2_';
 let cachedToken='', tokenExpiresAt=0, tokenRequest=null, cachedS3=null, cachedS3Signature='';
 
 function fail(message, status=400, retryable=false) { const e=new Error(message);e.status=status;e.retryable=retryable;throw e; }
@@ -15,8 +16,14 @@ function authenticate(code) {
   if(!user)fail('Kode akses salah atau dinonaktifkan.',401); return user;
 }
 function storageDriver(){return String(process.env.STORAGE_DRIVER||'drive').trim().toLowerCase()==='s3'?'s3':'drive';}
-function isObjectReport(r){return Array.isArray(r.ids)&&typeof r.ids[0]==='string'&&r.ids[0].startsWith(OBJECT_PREFIX);}
-function objectKey(reportId,file){return 'laporan/'+reportId+'/'+file;}
+function isObjectId(id){return typeof id==='string'&&(id.startsWith(OBJECT_PREFIX)||id.startsWith(NAMED_OBJECT_PREFIX));}
+function isObjectReport(r){return Array.isArray(r.ids)&&isObjectId(r.ids[0]);}
+function safeFolderName(name){
+  const clean=String(name||'').normalize('NFC').replace(/[\\/\u0000-\u001f\u007f]/g,'-').replace(/\s+/g,' ').trim().replace(/^[. ]+|[. ]+$/g,'').slice(0,80);
+  return clean||'Tanpa Nama';
+}
+function objectBase(r,name){return r.ids[0].startsWith(NAMED_OBJECT_PREFIX)?'laporan/'+safeFolderName(name)+'/'+r.reportId:'laporan/'+r.reportId;}
+function objectKey(r,name,file){return objectBase(r,name)+'/'+file;}
 function requiredEnv(keys,label){for(const key of keys)if(!process.env[key])fail('Environment Variable '+key+' belum diisi untuk '+label+'.',500);}
 
 async function accessToken(){
@@ -99,28 +106,28 @@ async function s3Put(key,body,contentType,metadata={}){
   return client.send(new PutObjectCommand({Bucket:config.bucket,Key:key,Body:body,ContentType:contentType,Metadata:metadata}));
 }
 function matchesManifest(m,r,user,name){return m&&m.reportId===r.reportId&&m.workerId===user.id&&m.name===name&&Array.isArray(m.ids)&&m.ids.length===r.ids.length&&m.ids.every((id,i)=>id===r.ids[i]);}
-async function objectManifest(r){return s3GetJson(objectKey(r.reportId,'manifest.json'));}
+async function objectManifest(r,name){return s3GetJson(objectKey(r,name,'manifest.json'));}
 async function beginObject(r,user,name){
-  if(r.ids.some(id=>!id.startsWith(OBJECT_PREFIX)))fail('ID Object Storage tidak valid.');
-  const current=await objectManifest(r);if(current){if(!matchesManifest(current,r,user,name))fail('Laporan tidak cocok.');return;}
-  const manifest={version:1,reportId:r.reportId,name,workerId:user.id,workerName:user.name,ids:r.ids,complete:false,createdAt:new Date().toISOString()};
-  await s3Put(objectKey(r.reportId,'manifest.json'),JSON.stringify(manifest),'application/json',{reportid:r.reportId,workerid:user.id});
+  if(r.ids.some(id=>!isObjectId(id))||r.ids.some(id=>id.startsWith(NAMED_OBJECT_PREFIX)!==r.ids[0].startsWith(NAMED_OBJECT_PREFIX)))fail('ID Object Storage tidak valid.');
+  const current=await objectManifest(r,name);if(current){if(!matchesManifest(current,r,user,name))fail('Laporan tidak cocok.');return;}
+  const manifest={version:2,reportId:r.reportId,name,folder:safeFolderName(name),workerId:user.id,workerName:user.name,ids:r.ids,complete:false,createdAt:new Date().toISOString()};
+  await s3Put(objectKey(r,name,'manifest.json'),JSON.stringify(manifest),'application/json',{reportid:r.reportId,workerid:user.id});
 }
 async function uploadObjectPhoto(r,user,name){
-  const slot=photoSlot(r),bytes=photoBytes(r),manifest=await objectManifest(r);
+  const slot=photoSlot(r),bytes=photoBytes(r),manifest=await objectManifest(r,name);
   if(!matchesManifest(manifest,r,user,name))fail('Laporan tidak cocok. Gunakan kode petugas dan server yang sama.');
-  const key=objectKey(r.reportId,PHOTO_NAMES[slot]),digest=sha256(bytes),existing=await s3Head(key);
+  const key=objectKey(r,name,PHOTO_NAMES[slot]),digest=sha256(bytes),existing=await s3Head(key);
   if(existing){if(existing.Metadata?.sha256!==digest||existing.Metadata?.photoid!==r.ids[slot+1])fail('Foto yang tersimpan berbeda. Jangan mengubah laporan di Object Storage.');return;}
   await s3Put(key,bytes,'image/jpeg',{sha256:digest,photoid:r.ids[slot+1],reportid:r.reportId,workerid:user.id,slot:String(slot)});
 }
 async function completeObject(r,user,name){
-  const manifest=await objectManifest(r);if(!matchesManifest(manifest,r,user,name))fail('Laporan tidak cocok.');
-  const files=await Promise.all(Array.from({length:5},(_,i)=>s3Head(objectKey(r.reportId,PHOTO_NAMES[i]))));
+  const manifest=await objectManifest(r,name);if(!matchesManifest(manifest,r,user,name))fail('Laporan tidak cocok.');
+  const files=await Promise.all(Array.from({length:5},(_,i)=>s3Head(objectKey(r,name,PHOTO_NAMES[i]))));
   for(let i=0;i<5;i++)if(!files[i]||files[i].Metadata?.photoid!==r.ids[i+1])fail('Laporan belum lengkap. Lanjutkan upload foto yang belum diterima.',409,true);
   const completedAt=manifest.completedAt||new Date().toISOString();
-  await s3Put(objectKey(r.reportId,'manifest.json'),JSON.stringify({...manifest,complete:true,completedAt}),'application/json',{reportid:r.reportId,workerid:user.id,complete:'true'});return completedAt;
+  await s3Put(objectKey(r,name,'manifest.json'),JSON.stringify({...manifest,complete:true,completedAt}),'application/json',{reportid:r.reportId,workerid:user.id,complete:'true'});return completedAt;
 }
-function reserveObjectIds(){return Array.from({length:9},()=>OBJECT_PREFIX+crypto.randomUUID());}
+function reserveObjectIds(){return Array.from({length:9},()=>NAMED_OBJECT_PREFIX+crypto.randomUUID());}
 
 async function handle(r){
   const user=authenticate(r.code);
@@ -151,4 +158,4 @@ module.exports=async function handler(req,res){
   }
   catch(e){console.error('Backend error:',e?.name||'',e?.message||e);const transient=e?.$metadata?.httpStatusCode>=500||e?.name==='TimeoutError';return res.status(e.status||(transient?503:500)).json({ok:false,retryable:e.retryable===true||transient,message:e.status?e.message:'Server belum dapat memproses. Coba lagi.'});}
 };
-module.exports._test={sha256,authenticate,validateReport,storageDriver,isObjectReport,objectKey,reserveObjectIds,s3Config};
+module.exports._test={sha256,authenticate,validateReport,storageDriver,isObjectReport,safeFolderName,objectBase,objectKey,reserveObjectIds,s3Config};
